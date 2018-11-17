@@ -3,7 +3,7 @@
   "description": "Webcomponents wrapper for Solid",
   "author": "Ryan Carniato",
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "lib/solid-components.js",
   "module": "dist/solid-components.js",
   "sideEffects": "false",
@@ -11,15 +11,15 @@
     "prepublishOnly": "rollup -c"
   },
   "devDependencies": {
-    "rollup": "^0.66.1",
+    "rollup": "^0.67.3",
     "s-js": "~0.4.9",
-    "solid-js": "~0.1.1"
+    "solid-js": "~0.2.0"
   },
   "dependencies": {
     "component-register": "~0.5.2"
   },
   "peerDependencies": {
     "s-js": "~0.4.9",
-    "solid-js": "~0.1.1"
+    "solid-js": "~0.2.0"
   }
 }

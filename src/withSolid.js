@@ -5,7 +5,7 @@ import { isConstructor } from 'component-register'
 function render(element, payload) {
   if ('render' in payload) payload = payload.render();
   if (Array.isArray(payload)) {
-    payload.forEach((child) => element.renderRoot().appendChild(child))
+    payload.forEach(child => element.renderRoot().appendChild(child))
   } else element.renderRoot().appendChild(payload);
 }
 
