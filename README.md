@@ -22,20 +22,18 @@ Props get assigned as element properties and hyphenated attributes. However, fro
 
 ## withSolid
 
-This is the main method to inject Solid State and rendering into your web component. It also maps the element props to state to manage their change detection fine grained.
+This is the main method to use Solid rendering into your web component. It also maps the element props to state to manage their change detection fine grained.
 
 ```jsx
 import { register, compose } from 'component-register';
 import { withSolid } from 'solid-components';
 
 /*
-withSolid(initialState, props => return selectors)
+withSolid
 */
 compose(
   register('my-component'),
-  withSolid({ someState: 123 }, ({ state }) => ({
-    derivedState: => state.someState * 2
-  }))
+  withSolid
 )({ element, state } =>
   // ....
 )
@@ -49,13 +47,13 @@ This library takes React's Portal concept and applies it in a webcomponent frien
 
 ```jsx
 import { register, compose } from 'component-register';
-import { withSolid, Portal } from 'solid-components';
+import { withSolid, usePortal } from 'solid-components';
 
 compose(
   register('my-component'),
-  withSolid({ someState: 123 })
-)({ element, state } =>
-  <>
+  withSolid
+)((props, { element }) => {
+  usePortal(element, () => <>
     <style></style>
     <Portal>
       <style>{(('span { color: red }'))}</style>
@@ -63,63 +61,60 @@ compose(
         My <span>Red</span> Content
       </my-modal>
     </Portal>
-  </>
-)
+  </>);
+})
 ```
 Portal alternatively takes a funtion as its children passing in the inserted host element.
 
 ## Context
 
-The context API is also based on React's version. It comes with 2 methods, createContext and withContext. createContext like the name suggests creates a new Context that consists of a Provider and Consumer pair to be used as Components. withContext is another mixin function that assigns the provider value to a key on the props coming into the component.
+Solid Components also offer a Context API for dependency detection which proves createContext, and use_ and with_ provider and context pairs depending on if you want to use HOC's or in component methods. createContext lets you define the initialization of any sort of state container. Example below using Solid's own state mechanism.
 
-Usually it requires creating a file to store the Context singleton, ex. ThemeContext.js
-
-```js
+```jsx
+// counter.js
+import { useState } from 'solid-js';
 import { createContext } from 'solid-components';
 
-export default createContext();
-```
-Then typically at the root of the application:
-```jsx
-import ThemeContext from './ThemeContext'
+export createContext((count = 0) => {
+  const [state, setState] = useState({ count });
+  return [state, {
+    increment() { setState('count', c => c + 1); }
+    decrement() { setState('count', c => c - 1); }
+  }];
+});
 
-//....
-<ThemeContext.Provider value={someStore}>
-  <Main />
-</ThemeContext.Provider>
-//....
-```
-And further down in some component further down the line:
-```jsx
-<ThemeContext.Consumer>{
-  someStore =>
-    <div />
-}</ThemeContext.Consumer>
-```
-The provider payload is not special and if you wish to track change detection it I suggest passing in a State object, computation, or observable store.
+// app.js
 
-Often you want to have a whole component be a consumer so you can do some mapping. This is where the withContext mixin comes into play. One might do something like this to use a Redux Store (keep in mind this out of the box does not work with react-redux and would need use the provided context library described here)
-```jsx
-import { register, compose } from 'component-register';
-import { pipe, from } from 'solid-js';
-import { withSolid, withContext } from 'solid-components';
-import ReduxContext from './ReduxContext'
+import { useProvider } from './solid-components';
+import CounterContext from './counter';
 
-/*
-withContext(key, context)
-*/
+const AppComponent = props => {
+  // start counter at 2
+  useContextProvider(CounterContext, 2);
+  // ...
+}
+
 compose(
-  register('my-component'),
-  withContext('reduxStore', ReduxContext)
-  withSolid({ todos: [] }, ({ reduxStore }) => ({
-    todos: pipe(
-      from(reduxStore.toObservable()),
-      map(({ todos }) => todos)
-    )
-  }))
-)({ element, state } =>
-  // .... state.todos
-)
+  register('app-component'),
+  withSolid
+)(AppComponent);
+
+// nested.js
+import { useContext } from './solid-components';
+import CounterContext from './counter';
+
+const NestedComponent = props => {
+  const [counter, { increment, decrement }] = useContext(CounterContext);
+  return <div>
+    <div>{( counter.count )}</div>
+    <button onclick={ increment }>+</button>
+    <button onclick={ decrement }>-</button>
+  </div>;
+}
+
+compose(
+  register('nested-component'),
+  withSolid
+)(NestedComponent);
 ```
-Of course this isn't mapping the action creators and [Component Register Extensions](https://github.com/ryansolid/component-register-extensions) provides additional mixins to do the job.
 

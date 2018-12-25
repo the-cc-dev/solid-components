@@ -1,29 +1,37 @@
-import S from 's-js';
-import { isConstructor } from 'component-register'
+const EC = Symbol('element-context');
 
-export function createContext() {
-  const initialized = S.value(false);
-  let storedValue;
-  return {
-    Provider({ value, children }) {
-      storedValue = value;
-      initialized(true)
-      return children;
-    },
-    Consumer({ children }) {
-      return () => initialized() && children[0] && children[0](storedValue)
+function lookupContext(element, context) {
+  return (element[EC] && element[EC][context.id]) || ((element.host || element.parentNode) && lookupContext(element.host || element.parentNode, context));
+}
+
+export function createContext(initFn) {
+  return { id: Symbol('context'), initFn };
+}
+
+// Hooks
+export function useProvider(element, context, value) {
+  element[EC] || (element[EC] = {});
+  element[EC][context.id] = context.initFn ? context.initFn(value): value;
+}
+
+export function useContext(element, context) {
+  return lookupContext(element, context);
+}
+
+// HOCs
+export function withProvider(context, value) {
+  return ComponentType =>
+    function(props, { element }) {
+      useProvider(element, context, value);
+      return ComponentType.apply(this, arguments);
     }
-  }
 }
 
 export function withContext(key, context) {
   return ComponentType =>
-    options =>
-      S(context.Consumer({children: [
-        props => {
-          options[key] = props;
-          if (isConstructor(ComponentType)) return new ComponentType(options);
-          return ComponentType(options);
-        }
-      ]}))
+    function(props, options) {
+      const { element } = options;
+      options = {...options, [key]: lookupContext(element, context)};
+      return ComponentType(props, options);
+    }
 }
