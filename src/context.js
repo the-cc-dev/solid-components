@@ -21,7 +21,7 @@ export function useContext(element, context) {
 // HOCs
 export function withProvider(context, value) {
   return ComponentType =>
-    function(props, { element }) {
+    function(props, element) {
       useProvider(element, context, value);
       return ComponentType.apply(this, arguments);
     }
@@ -29,8 +29,7 @@ export function withProvider(context, value) {
 
 export function withContext(key, context) {
   return ComponentType =>
-    function(props, options) {
-      const { element } = options;
+    function(props, element, options) {
       options = {...options, [key]: lookupContext(element, context)};
       return ComponentType(props, options);
     }

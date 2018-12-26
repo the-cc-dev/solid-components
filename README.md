@@ -34,7 +34,7 @@ withSolid
 compose(
   register('my-component'),
   withSolid
-)((props, options) =>
+)((props, element, mixins) =>
   // ....
 )
 ```
@@ -52,7 +52,7 @@ import { withSolid, usePortal } from 'solid-components';
 compose(
   register('my-component'),
   withSolid
-)((props, { element }) => {
+)((props, element) => {
   usePortal(element, <>
     <style>{'span { color: red }'}</style>
     <my-modal>
@@ -85,7 +85,7 @@ export createContext((count = 0) => {
 import { useProvider } from './solid-components';
 import CounterContext from './counter';
 
-const AppComponent = (props, { element }) => {
+const AppComponent = (props, element) => {
   // start counter at 2
   useProvider(element, CounterContext, 2);
   // ...
@@ -100,7 +100,7 @@ compose(
 import { useContext } from './solid-components';
 import CounterContext from './counter';
 
-const NestedComponent = (props, { element }) => {
+const NestedComponent = (props, element) => {
   const [counter, { increment, decrement }] = useContext(element, CounterContext);
   return <div>
     <div>{( counter.count )}</div>
