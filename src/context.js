@@ -31,6 +31,6 @@ export function withContext(key, context) {
   return ComponentType =>
     function(props, element, options) {
       options = {...options, [key]: lookupContext(element, context)};
-      return ComponentType(props, options);
+      return ComponentType(props, element, options);
     }
 }

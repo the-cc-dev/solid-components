@@ -3,7 +3,7 @@
   "description": "Webcomponents wrapper for Solid",
   "author": "Ryan Carniato",
   "license": "MIT",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "lib/solid-components.js",
   "module": "dist/solid-components.js",
   "sideEffects": "false",
