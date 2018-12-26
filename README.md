@@ -10,7 +10,7 @@ import { register } from 'component-register';
 /*
 register(tag, defaultProps)
 */
-register('my-component', {someProp: 'one', otherProp: 'two'})({element, props} =>
+register('my-component', {someProp: 'one', otherProp: 'two'})(({element, props}) =>
   // ....
 )
 ```
@@ -22,7 +22,7 @@ Props get assigned as element properties and hyphenated attributes. However, fro
 
 ## withSolid
 
-This is the main method to use Solid rendering into your web component. It also maps the element props to state to manage their change detection fine grained.
+This is the main method to use Solid rendering into your web component. It also maps the element props to reactive props as the first argument to manage their change detection fine grained.
 
 ```jsx
 import { register, compose } from 'component-register';
@@ -34,7 +34,7 @@ withSolid
 compose(
   register('my-component'),
   withSolid
-)({ element, state } =>
+)((props, options) =>
   // ....
 )
 ```
@@ -53,14 +53,11 @@ compose(
   register('my-component'),
   withSolid
 )((props, { element }) => {
-  usePortal(element, () => <>
-    <style></style>
-    <Portal>
-      <style>{(('span { color: red }'))}</style>
-      <my-modal>
-        My <span>Red</span> Content
-      </my-modal>
-    </Portal>
+  usePortal(element, <>
+    <style>{'span { color: red }'}</style>
+    <my-modal>
+      My <span>Red</span> Content
+    </my-modal>
   </>);
 })
 ```
@@ -88,9 +85,9 @@ export createContext((count = 0) => {
 import { useProvider } from './solid-components';
 import CounterContext from './counter';
 
-const AppComponent = props => {
+const AppComponent = (props, { element }) => {
   // start counter at 2
-  useContextProvider(CounterContext, 2);
+  useProvider(element, CounterContext, 2);
   // ...
 }
 
@@ -103,8 +100,8 @@ compose(
 import { useContext } from './solid-components';
 import CounterContext from './counter';
 
-const NestedComponent = props => {
-  const [counter, { increment, decrement }] = useContext(CounterContext);
+const NestedComponent = (props, { element }) => {
+  const [counter, { increment, decrement }] = useContext(element, CounterContext);
   return <div>
     <div>{( counter.count )}</div>
     <button onclick={ increment }>+</button>
