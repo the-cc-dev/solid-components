@@ -1,8 +1,27 @@
 # Solid Components
 
-This library extends [SolidJS](https://github.com/ryansolid/solid) by adding custom components and HOC's to manage modular behaviors and composition. It uses [Component Register](https://github.com/ryansolid/component-register) to create Web Components and its composed mixin pattern to construct modular re-usable behaviors. This allows your code to available as simple HTML elements for library interopt and to leverage Shadow DOM style isolation. Solid already supports binding to Web Components so this fills the gap allowing full modular applications to be built out of nested Web Components. Component Register makes use of the V1 Standards and on top of being compatible with the common webcomponent.js polyfills, has a solution for Polyfilling Shadow DOM CSS using the ShadyCSS Parser from Polymer in a generic framework agnostic way (unlike the ShadyCSS package).
+This library extends [Solid](https://github.com/ryansolid/solid) by adding Custom Web Components and extensions to manage modular behaviors and composition. It uses [Component Register](https://github.com/ryansolid/component-register) to create Web Components and its composed mixin pattern to construct modular re-usable behaviors. This allows your code to available as simple HTML elements for library interopt and to leverage Shadow DOM style isolation. Solid already supports binding to Web Components so this fills the gap allowing full modular applications to be built out of nested Web Components. Component Register makes use of the V1 Standards and on top of being compatible with the common webcomponent.js polyfills, has a solution for Polyfilling Shadow DOM CSS using the ShadyCSS Parser from Polymer in a generic framework agnostic way (unlike the ShadyCSS package).
 
-It all starts by using the register HOC which upgrades your class or method to a WebComponent. It is always the start of the chain.
+## Component
+
+The simplest way to create a Component is to use the Component method. The first argument is the Custom element tag, the 2nd is optional is the props, and the 3rd is the Solid template function. Solid template is provided State wrapped props as the first argument, and the underlying element as the 2nd.
+```jsx
+import { Component } from 'solid-components';
+
+Component('my-component', {someProp: 'one', otherProp: 'two'}, (props, element) => {
+  // ... Solid code
+})
+```
+Props get assigned as element properties and hyphenated attributes. This exposes the component that can be used in HTML/JSX as:
+```html
+<my-component some-prop="some value" other-prop="some value"></my-component>
+```
+
+This is all you need to get stated with Solid Components.
+
+## withSolid
+
+Under the hood the Component method is using Component Registers mixins to create our Custom Element. So this library also provides the way to do so directly if you wish to mixin your own functionality. It all starts by using the register HOC which upgrades your class or method to a WebComponent. It is always the start of the chain.
 
 ```jsx
 import { register } from 'component-register';
@@ -14,15 +33,8 @@ register('my-component', {someProp: 'one', otherProp: 'two'})(({element, props})
   // ....
 )
 ```
-Which exposes the component to html as:
-```html
-<my-component some-prop="some value" other-prop="some value"></my-component>
-```
-Props get assigned as element properties and hyphenated attributes. However, from there additional behavior can be mixed in by adding more methods. Component Register exposes a convenient compose method (a reduce right) that makes it easier compose multiple mixins.
 
-## withSolid
-
-This is the main method to use Solid rendering into your web component. It also maps the element props to reactive props as the first argument to manage their change detection fine grained.
+Component Register exposes a convenient compose method (a reduce right) that makes it easier compose multiple mixins. From there we can use withSolid mixin to basically produce the Component method above. However, now you are able to add more HOC mixins in the middle to add additional behavior in your components.
 
 ```jsx
 import { register, compose } from 'component-register';
@@ -46,31 +58,30 @@ Portals are based on the React concept of Portals to allow markup outside of the
 This library takes React's Portal concept and applies it in a webcomponent friendly way by linking a satelite ShadowRoot not requiring another custom component and never exposing the render tree to the Light DOM. Sure Styles do not flow through the Portal but any Style Tag defined inside will be able to style the elements you would stick in the slots of your generic element. In addition all event handlers directly bound to the Portal will be forwarded to the Shadowroot.
 
 ```jsx
-import { register, compose } from 'component-register';
-import { withSolid, usePortal } from 'solid-components';
+import { Component, usePortal } from 'solid-components';
 
-compose(
-  register('my-component'),
-  withSolid
-)((props, element) => {
-  usePortal(element, <>
+Component('my-component', () => {
+  usePortal(<>
     <style>{'span { color: red }'}</style>
     <my-modal>
       My <span>Red</span> Content
     </my-modal>
   </>);
+  // .. rest of my rendering
 })
 ```
 Portal alternatively takes a funtion as its children passing in the inserted host element.
 
 ## Context
 
-Solid Components also offer a Context API for dependency detection which proves createContext, and use_ and with_ provider and context pairs depending on if you want to use HOC's or in component methods. createContext lets you define the initialization of any sort of state container. Example below using Solid's own state mechanism.
+Solid Components also expose Component Register Context API for dependency detection which provides createContext, useProvider and useConsumer. createContext lets you define the initialization of any sort of state container. Both useProvider and useContext take context as the first argument. The second argument for provider is passed as argument to the context initializer, or if no initializer is the value of the context.
+
+Example below using Solid's own state mechanism although context can house just about anything.
 
 ```jsx
 // counter.js
-import { useState } from 'solid-js';
 import { createContext } from 'solid-components';
+import { useState } from 'solid-js';
 
 export createContext((count = 0) => {
   const [state, setState] = useState({ count });
@@ -81,27 +92,23 @@ export createContext((count = 0) => {
 });
 
 // app.js
-
-import { useProvider } from './solid-components';
+import { Component, useProvider } from 'solid-components';
 import CounterContext from './counter';
 
-const AppComponent = (props, element) => {
+const AppComponent = () => {
   // start counter at 2
-  useProvider(element, CounterContext, 2);
+  useProvider(CounterContext, 2);
   // ...
 }
 
-compose(
-  register('app-component'),
-  withSolid
-)(AppComponent);
+Component('app-component', AppComponent);
 
 // nested.js
-import { useContext } from './solid-components';
+import { Component, useConsumer } from 'solid-components';
 import CounterContext from './counter';
 
-const NestedComponent = (props, element) => {
-  const [counter, { increment, decrement }] = useContext(element, CounterContext);
+const NestedComponent = () => {
+  const [counter, { increment, decrement }] = useConsumer(CounterContext);
   return <div>
     <div>{( counter.count )}</div>
     <button onclick={ increment }>+</button>
@@ -109,9 +116,5 @@ const NestedComponent = (props, element) => {
   </div>;
 }
 
-compose(
-  register('nested-component'),
-  withSolid
-)(NestedComponent);
+Component('nested-component', NestedComponent);
 ```
-

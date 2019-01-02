@@ -1,9 +1,11 @@
 import { useCleanup } from 'solid-js'
 import { r } from 'solid-js/dom';
+import { getCurrentElement } from 'component-register';
 
-export default function usePortal(element, nodes, anchor = document.body) {
+export default function usePortal(nodes, anchor = document.body) {
   const container =  document.createElement('div'),
-    root = container.attachShadow({ mode: 'open' });
+    root = container.attachShadow({ mode: 'open' }),
+    element = getCurrentElement();
   container.host = element;
   if (typeof nodes === 'function') nodes = nodes(container);
   r.insert(container, nodes);

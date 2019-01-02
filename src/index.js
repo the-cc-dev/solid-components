@@ -1,3 +1,3 @@
-export { default as withSolid } from './withSolid'
+export * from './component'
 export { default as usePortal } from './usePortal'
-export * from './context'
+export { createContext, useProvider, useConsumer } from 'component-register';
