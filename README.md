@@ -8,7 +8,7 @@ The simplest way to create a Component is to use the Component method. The first
 ```jsx
 import { Component } from 'solid-components';
 
-Component('my-component', {someProp: 'one', otherProp: 'two'}, (props, element) => {
+Component('my-component', {someProp: 'one', otherProp: 'two'}, props => {
   // ... Solid code
 })
 ```
@@ -21,7 +21,7 @@ This is all you need to get stated with Solid Components.
 
 ## withSolid
 
-Under the hood the Component method is using Component Registers mixins to create our Custom Element. So this library also provides the way to do so directly if you wish to mixin your own functionality. It all starts by using the register HOC which upgrades your class or method to a WebComponent. It is always the start of the chain.
+Under the hood the Component method is using Component Register's mixins to create our Custom Element. So this library also provides the way to do so directly if you wish to mixin your own functionality. It all starts by using the register HOC which upgrades your class or method to a WebComponent. It is always the start of the chain.
 
 ```jsx
 import { register } from 'component-register';
@@ -29,7 +29,7 @@ import { register } from 'component-register';
 /*
 register(tag, defaultProps)
 */
-register('my-component', {someProp: 'one', otherProp: 'two'})(({element, props}) =>
+register('my-component', {someProp: 'one', otherProp: 'two'})((props, options) =>
   // ....
 )
 ```
@@ -46,7 +46,7 @@ withSolid
 compose(
   register('my-component'),
   withSolid
-)((props, element, mixins) =>
+)((props, options) =>
   // ....
 )
 ```
@@ -55,7 +55,7 @@ compose(
 
 Portals are based on the React concept of Portals to allow markup outside of the root element of your component to be managed declaratively from your component. This has been historically useful for things like modals which due to Z-Index and render layers has always been awkward with nesting. With Webcomponents this has been more of a challenge because of Shadow DOM style encapsulation. Most generic Modals will use Slots to inject the content which means that parent styles should hold up. However if the Modal is inserted at the top of the Document it is no longer in the Shadow Root. In order to get styles you'd need to make non-generic components to wrap the generic one and are still left now with the manual effort of assigning the properties of those wrappers being inserted outside.
 
-This library takes React's Portal concept and applies it in a webcomponent friendly way by linking a satelite ShadowRoot not requiring another custom component and never exposing the render tree to the Light DOM. Sure Styles do not flow through the Portal but any Style Tag defined inside will be able to style the elements you would stick in the slots of your generic element. In addition all event handlers directly bound to the Portal will be forwarded to the Shadowroot.
+This library takes React's Portal concept and applies it in a webcomponent friendly way by linking a satelite ShadowRoot not requiring another custom component and never exposing the render tree to the Light DOM. Sure Styles do not flow through the Portal but any Style Tag defined inside will be able to style the elements you would stick in the slots of your generic element.
 
 ```jsx
 import { Component, usePortal } from 'solid-components';
@@ -74,7 +74,7 @@ Portal alternatively takes a funtion as its children passing in the inserted hos
 
 ## Context
 
-Solid Components also expose Component Register Context API for dependency detection which provides createContext, useProvider and useConsumer. createContext lets you define the initialization of any sort of state container. Both useProvider and useContext take context as the first argument. The second argument for provider is passed as argument to the context initializer, or if no initializer is the value of the context.
+Solid Components also expose Component Register Context API for dependency detection which provides createContext, useProvider and useContext. createContext lets you define the initialization of any sort of state container. Both useProvider and useContext take context as the first argument. The second argument for provider is passed as argument to the context initializer, or if no initializer is the value of the context.
 
 Example below using Solid's own state mechanism although context can house just about anything.
 
@@ -104,11 +104,11 @@ const AppComponent = () => {
 Component('app-component', AppComponent);
 
 // nested.js
-import { Component, useConsumer } from 'solid-components';
+import { Component, useContext } from 'solid-components';
 import CounterContext from './counter';
 
 const NestedComponent = () => {
-  const [counter, { increment, decrement }] = useConsumer(CounterContext);
+  const [counter, { increment, decrement }] = useContext(CounterContext);
   return <div>
     <div>{( counter.count )}</div>
     <button onclick={ increment }>+</button>

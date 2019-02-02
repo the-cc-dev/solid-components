@@ -3,15 +3,15 @@ import { root, useState } from 'solid-js';
 import { r } from 'solid-js/dom';
 
 export function withSolid(ComponentType) {
-  return options => {
-    const { element, props: rawProps, ...otherOptions } = options;
+  return (rawProps, options) => {
+    const { element } = options;
     root(dispose => {
       const [props, setProps] = useState(rawProps || {});
 
       element.addPropertyChangedCallback((key, val) => setProps(key, val));
       element.addReleaseCallback(() => dispose());
 
-      return r.insert(element.renderRoot(), ComponentType(props, element, otherOptions));
+      return r.insert(element.renderRoot(), ComponentType(props, options));
     });
   }
 }
