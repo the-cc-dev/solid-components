@@ -1,12 +1,12 @@
 import { register } from 'component-register';
-import { root, useState } from 'solid-js';
+import { createRoot, createState } from 'solid-js';
 import { r } from 'solid-js/dom';
 
 export function withSolid(ComponentType) {
   return (rawProps, options) => {
     const { element } = options;
-    root(dispose => {
-      const [props, setProps] = useState(rawProps || {});
+    createRoot(dispose => {
+      const [props, setProps] = createState(rawProps || {});
 
       element.addPropertyChangedCallback((key, val) => setProps(key, val));
       element.addReleaseCallback(() => dispose());
@@ -16,10 +16,10 @@ export function withSolid(ComponentType) {
   }
 }
 
-export function Component(tagLabel, props, ComponentType) {
+export function Component(tag, props, ComponentType) {
   if (arguments.length === 2) {
     ComponentType = props;
     props = {};
   }
-  return register(tagLabel, props)(withSolid(ComponentType));
+  return register(tag, props)(withSolid(ComponentType));
 }

@@ -1,8 +1,8 @@
-import { useCleanup } from 'solid-js'
+import { onCleanup } from 'solid-js'
 import { r } from 'solid-js/dom';
 import { getCurrentElement } from 'component-register';
 
-export default function usePortal(nodes, anchor = document.body) {
+export default function createPortal(nodes, anchor = document.body) {
   const container =  document.createElement('div'),
     root = container.attachShadow({ mode: 'open' }),
     element = getCurrentElement();
@@ -13,5 +13,5 @@ export default function usePortal(nodes, anchor = document.body) {
   // This breaks document-register-element detection
   Promise.resolve().then(() => { while(container.firstChild) root.appendChild(container.firstChild); });
   anchor.appendChild(container);
-  useCleanup(() => anchor.removeChild(container));
+  onCleanup(() => anchor.removeChild(container));
 }

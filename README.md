@@ -58,10 +58,10 @@ Portals are based on the React concept of Portals to allow markup outside of the
 This library takes React's Portal concept and applies it in a webcomponent friendly way by linking a satelite ShadowRoot not requiring another custom component and never exposing the render tree to the Light DOM. Sure Styles do not flow through the Portal but any Style Tag defined inside will be able to style the elements you would stick in the slots of your generic element.
 
 ```jsx
-import { Component, usePortal } from 'solid-components';
+import { Component, createPortal } from 'solid-components';
 
 Component('my-component', () => {
-  usePortal(<>
+  createPortal(<>
     <style>{'span { color: red }'}</style>
     <my-modal>
       My <span>Red</span> Content
@@ -74,17 +74,17 @@ Portal alternatively takes a funtion as its children passing in the inserted hos
 
 ## Context
 
-Solid Components also expose Component Register Context API for dependency detection which provides createContext, useProvider and useContext. createContext lets you define the initialization of any sort of state container. Both useProvider and useContext take context as the first argument. The second argument for provider is passed as argument to the context initializer, or if no initializer is the value of the context.
+Solid Components also expose Component Register Context API for dependency detection which provides createContext, createProvider and useContext. createContext lets you define the initialization of any sort of state container. Both createProvider and useContext take context as the first argument. The second argument for provider is passed as argument to the context initializer, or if no initializer is the value of the context.
 
 Example below using Solid's own state mechanism although context can house just about anything.
 
 ```jsx
 // counter.js
 import { createContext } from 'solid-components';
-import { useState } from 'solid-js';
+import { createState } from 'solid-js';
 
 export createContext((count = 0) => {
-  const [state, setState] = useState({ count });
+  const [state, setState] = createState({ count });
   return [state, {
     increment() { setState('count', c => c + 1); }
     decrement() { setState('count', c => c - 1); }
@@ -92,12 +92,12 @@ export createContext((count = 0) => {
 });
 
 // app.js
-import { Component, useProvider } from 'solid-components';
+import { Component, createProvider } from 'solid-components';
 import CounterContext from './counter';
 
 const AppComponent = () => {
   // start counter at 2
-  useProvider(CounterContext, 2);
+  createProvider(CounterContext, 2);
   // ...
 }
 

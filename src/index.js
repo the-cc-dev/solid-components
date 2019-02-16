@@ -1,3 +1,3 @@
 export * from './component'
-export { default as usePortal } from './usePortal'
-export { createContext, provide as useProvider, consume as useContext } from 'component-register';
+export { default as createPortal } from './createPortal'
+export { createContext, provide as createProvider, consume as useContext } from 'component-register';
